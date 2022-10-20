@@ -17,16 +17,31 @@ export class AdmindashboardComponent implements OnInit {
     seller:new FormControl(),
     category:new FormControl(),
     medimg:new FormControl(),
+    
   });
-products:Array<Medicine>=[]
+products:Array<Medicine>=[];
+  updateMsg: string = ""
+  medid: number = 0;
+  price: number = 0;
+  medname: String = "";
+  description: String = "";
+  seller: String= "";
+  category: String = "";
+  medimg: String = "";
 showAdd !: boolean;
  constructor(private router: Router, private med : MedicineService) { }
 
   ngOnInit(): void {
+    this.loadProducts();
   }
   clickAddMedicine()
   {
    this.showAdd= true;
+  }
+  loadProducts(): void {
+    this.med.loadProductDetails().subscribe(res => this.products = res
+    );
+    console.log('pro', this.products)
   }
   
 
@@ -40,10 +55,40 @@ showAdd !: boolean;
       alert("Product added Successfully");
       this.productRef.reset();
     }
+    deleteMedicine(medid:number){
+      //console.log(pid)
+      this.med.deleteMedicineById(medid).subscribe({
+        next:(result:any)=>console.log(result),
+        error:(error:any)=>console.log(error),
+        complete:()=>{
+            this.loadProducts();   
+        }
+      })
+    }
 
   clickShowMedicine(){
     this.router.navigate(['/update']);
     
+  }
+  updateProduct(product: Medicine) {
+    console.log(product);
+    this.medid = product.medid;
+    this.price = product.price;
+    this.category = product.category;
+    this.medname = product.medname;
+    this.medimg = product.medimg;
+    this.description=product.description;
+    this.seller=product.seller;
+  }
+  updateProductDetails() {
+    let product = { "medid": this.medid, "price": this.price, "medname": this.medname, "description": this.description, 
+    "seller":this.seller,"category": this.category, "medimg": this.medimg }
+    console.log(product);
+    this.med.updateMedicine(product).subscribe(result => this.updateMsg = result, error => console.log(error),
+      () => {
+        this.loadProducts();
+        alert("Product Updated Successfully");
+      })
   }
 }
  
